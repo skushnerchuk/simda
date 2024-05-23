@@ -45,5 +45,4 @@ go-task integration-test
 
 Демо клиента:
 
-[demo.webm](https://github.com/skushnerchuk/simda/assets/48449889/30ca34a1-478b-4ed9-8770-567cbff5d345)
-
+[demo.webm](https://github.com/skushnerchuk/simda/assets/48449889/93d1c737-5a11-4f16-932e-2db2f4b6cbbd)
