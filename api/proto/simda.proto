@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package daemon;
+
+import "buf/validate/validate.proto";
+
+option go_package="./;pb";
+
+service Simda {
+  rpc StreamSnapshots(Request) returns (stream Snapshot) {};
+}
+
+message Request {
+  uint32 period = 1;
+  uint32 warming = 2;
+  option (buf.validate.message).cel = {
+    id: "request.warming",
+    message: "Warming must be great or equal then period",
+    expression: "this.warming >= this.period"
+  };
+  option (buf.validate.message).cel = {
+    id: "request.warming",
+    message: "Warming must be less or equal 120 seconds",
+    expression: "this.warming <= 120"
+  };
+}
+
+// Загрузка системы
+message LoadAverage {
+  double one = 1;
+  double five = 2;
+  double fifteen = 15;
+}
+
+// Загрузка процессора
+message CpuAverage {
+  double user = 1;
+  double system = 2;
+  double idle = 3;
+}
+
+// Сведения о дисках (i/o)
+message DiskIO {
+  string name = 1;
+  double tps = 2;
+  double rdSpeed = 3;
+  double wrSpeed = 4;
+}
+
+// Сведения о дисках (usage)
+message DiskUsage {
+  string device = 1;
+  string mountPoint = 2;
+  double usagePercent = 3;
+  double usage = 4;
+  double inodeCount = 5;
+  double inodeAvailablePercent = 6;
+}
+
+// Сведения о процессе
+message Process {
+  uint32 pid = 1;
+  string cmdLine = 2;
+}
+
+// Сетевой адрес
+message SockAddr {
+  string ip = 1;
+  uint32 port = 2;
+}
+
+// Сетевые соединения
+message NetConnection {
+  string protocol = 1;
+  optional Process process = 2;
+  string user = 3;
+  optional SockAddr localAddr = 4;
+  optional SockAddr foreignAddr = 5;
+  string state = 6;
+  uint32 userId = 7;
+}
+
+// Сетевые соединения по состояниям
+message NetConnectionStates {
+  string state = 1;
+  uint32 count = 2;
+}
+
+// Данные траффика по протоколам
+message NetTopByProtocol {
+  string protocol = 1;
+  uint64 bytes = 2;
+  double percent = 3;
+}
+
+// Данные траффика по соединениям
+message NetTopByConnection {
+  string protocol = 1;
+  uint64 bytes = 2;
+  double percent = 3;
+  SockAddr sourceAddr = 4;
+  SockAddr destinationAddr = 5;
+}
+
+// Сообщение, содержащее сведения о включенных/отключенных в настройках метриках.
+// Служит для корректного отображения в клиенте состояния той или иной метрики
+message EnabledMetrics {
+  bool loadAvg = 1;
+  bool cpuAvg = 2;
+  bool diskIO = 3;
+  bool diskUsage = 4;
+  bool netConnections = 5;
+  bool netConnectionStates = 6;
+  bool netTopByProtocol = 7;
+  bool netTopByConnection = 8;
+}
+
+// Снимок метрик
+message Snapshot {
+  EnabledMetrics metrics = 1;
+  LoadAverage loadAvg = 2;
+  CpuAverage cpuAvg = 3;
+  repeated DiskUsage diskUsage = 4;
+  repeated DiskIO diskIO = 5;
+  repeated NetConnection netConnections = 6;
+  repeated NetConnectionStates netConnectionsStates = 7;
+  repeated NetTopByProtocol netTopByProtocol = 8;
+  repeated NetTopByConnection netTopByConnection = 9;
+}

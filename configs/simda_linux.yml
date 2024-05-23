@@ -1,0 +1,23 @@
+host: 0.0.0.0
+log_level: INFO
+metrics:
+    cpu_avg: true
+    disk_io: true
+    disk_usage: true
+    load_avg: true
+    net_connections: true
+    net_connections_states: true
+    net_top_by_connection: true
+    net_top_by_protocol: true
+port: 50051
+system:
+    dev: /dev
+    interface: any
+    proc: /proc
+    procmountinfo: ""
+    run: /run
+    sys: /sys
+    tcp: /proc/net/tcp
+    tcp6: /proc/net/tcp6
+    udp: /proc/net/udp
+    udp6: /proc/net/udp6

@@ -1,0 +1,60 @@
+version: '3'
+
+tasks:
+
+  # Так как требуется, чтобы в сообщении, отправляемом клиенту, были все поля,
+  # включая пустые, после генерации файлов удаляем параметр omitempty во всех созданных структурах
+  grpc:
+    - | 
+      protoc -I ./api/proto \
+      --go_out ./internal/server/gen --go_opt paths=source_relative \
+      --go-grpc_out ./internal/server/gen --go_opt paths=source_relative \
+      ./api/proto/simda.proto && \
+      ls internal/server/gen/*.pb.go | xargs -n1 -IX bash -c 'sed s/,omitempty// X > X.tmp && mv X{.tmp,}'
+
+  lint:
+    - |
+      golangci-lint run ./...
+
+  build-daemon:
+    platforms: [linux/amd64, darwin]
+    cmds:
+      - |
+        CGO_ENABLED=1 go build -ldflags "-s -w" -o ./bin/simda ./cmd/daemon
+
+  build-client:
+    cmds:
+      - |
+        CGO_ENABLED=0 go build -ldflags "-s -w" -o ./bin/simda_client ./cmd/client
+
+  build:
+    platforms: [linux/amd64, darwin]
+    cmds:
+      - task: build-daemon
+      - task: build-client
+
+  test:
+    platforms: [linux/amd64]
+    cmds:
+      - |
+        go test -race ./internal/...
+
+  integration-test-local:
+    platforms: [linux]
+    cmds:
+      - |
+        go test -v -race ./tests/... 
+
+  integration-test:
+    platforms: [linux]
+    cmds:
+      - |
+        docker build . -f ./build/tests/Dockerfile -t simda-test && \
+        docker run --rm -ti simda-test && \
+        docker rmi -f simda-test
+
+  cover:
+    platforms: [linux/amd64]
+    cmds:
+      - |
+        go test -race -cover -coverprofile=c.out ./internal/... && go tool cover -html="c.out"
