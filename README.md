@@ -9,7 +9,7 @@
 ### System Information Monitoring DAemon
 
 ```bash
-sudo apt install -y libpcap libpcap-dev
+sudo apt install -y libpcap-dev
 sudo ln -f -s /usr/lib/libpcap.so /usr/lib/libpcap.so.1
 ```
 
